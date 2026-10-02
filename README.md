@@ -19,9 +19,9 @@ Link to that address from the Program page of the class site. You can also open 
 |---|---|
 | `process.py` | Reads the GDSC files, removes poor curve fits, joins drugs, cell lines and markers, and writes `gdsc_data.json` |
 | `compounds_v17.csv` | Drug names, targets and pathways for the 265 drug IDs, from `screened_compounds_rel_8.5.csv` on cancerrxgene.org |
-| `stats.js` | The statistics: Mann-Whitney U test (exact for small groups), Hodges-Lehmann fold difference and 95% range, within-cancer-type model, Benjamini-Hochberg FDR |
-| `app.js` | The page logic: drop-downs, plots, explanations, scans |
-| `template.html` | Page layout, styles and the About and Methods text |
+| `stats.js` | The statistics: Mann-Whitney U test (exact for small groups), Hodges-Lehmann fold difference and 95% range, within-cancer-type model, Fisher exact test |
+| `app.js` | The page logic: the three pickers, the answer, the charts and the checks |
+| `template.html` | Page layout, styles and the How it works text |
 | `build.py` | Puts the pieces together into `../index.html` |
 
 ## Example data file

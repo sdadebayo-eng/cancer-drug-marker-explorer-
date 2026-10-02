@@ -1,0 +1,526 @@
+<title>Does the Gene Decide the Drug?</title>
+<meta name="description" content="Pick a drug, a gene change and a cancer type, and see whether cancer cell lines with that gene change respond differently, using real GDSC1000 data from 984 cell lines.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,400;0,500;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600..800&display=swap">
+<style>
+/* Layout: one reading column. The question panel sits on top, the answer reads as page text with one
+   dose chart under it, a short checklist says how sure to be, and every technical detail folds away. */
+:root{
+  --paper:#F3F5F8; --panel:#FFFFFF; --wash:#E7ECF4;
+  --ink:#141D2B; --ink-2:#465163; --ink-3:#5F6B7E; --rule:#D5DCE5; --grid:#E6EAF0;
+  --act:#1F48B8; --act-wash:#E1E9FB;
+  --gene:#D2481A; --nogene:#667A99; --beyond:#EEF1F5;
+  --good:#1B7747; --good-wash:#E0F2E8; --warn:#945A00; --warn-wash:#FBF0DA;
+  --stop:#B42A1F; --stop-wash:#FBE5E2; --none:#566173; --none-wash:#E9EDF2;
+  --tip-bg:#141D2B; --tip-ink:#F3F5F8; --pop-shadow:0 14px 36px rgba(20,29,43,.16); --seg:#FFFFFF;
+  --display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --text:"Atkinson Hyperlegible Next","Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --paper:#0E131B; --panel:#161D28; --wash:#1B2331;
+    --ink:#E8EDF4; --ink-2:#B3BDCB; --ink-3:#8D98A8; --rule:#2A3445; --grid:#212A37;
+    --act:#93ADFF; --act-wash:#1D2A4A;
+    --gene:#E86A2E; --nogene:#728AAE; --beyond:#1C2430;
+    --good:#5FCB90; --good-wash:#11301F; --warn:#E9AE4F; --warn-wash:#33270F;
+    --stop:#F08A7F; --stop-wash:#3A1C18; --none:#A8B2C0; --none-wash:#222B38;
+    --tip-bg:#E8EDF4; --tip-ink:#0E131B; --pop-shadow:0 14px 36px rgba(0,0,0,.55); --seg:#2E3A4E;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --paper:#0E131B; --panel:#161D28; --wash:#1B2331;
+  --ink:#E8EDF4; --ink-2:#B3BDCB; --ink-3:#8D98A8; --rule:#2A3445; --grid:#212A37;
+  --act:#93ADFF; --act-wash:#1D2A4A;
+  --gene:#E86A2E; --nogene:#728AAE; --beyond:#1C2430;
+  --good:#5FCB90; --good-wash:#11301F; --warn:#E9AE4F; --warn-wash:#33270F;
+  --stop:#F08A7F; --stop-wash:#3A1C18; --none:#A8B2C0; --none-wash:#222B38;
+  --tip-bg:#E8EDF4; --tip-ink:#0E131B; --pop-shadow:0 14px 36px rgba(0,0,0,.55); --seg:#2E3A4E;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 var(--text)}
+a{color:var(--act);text-underline-offset:2px}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--act);outline-offset:2px;border-radius:6px}
+.page{max-width:1000px;margin:0 auto;padding-inline:clamp(16px,4vw,40px);padding-block:28px 56px}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:18px 32px;padding-bottom:22px;border-bottom:1px solid var(--rule)}
+.brand{max-width:620px;min-width:0}
+.brand h1{font-family:var(--display);font-weight:760;font-size:clamp(31px,4.6vw,46px);line-height:1.04;letter-spacing:-.018em;margin:0 0 12px;text-wrap:balance}
+.lede{margin:0;color:var(--ink-2);font-size:17px;max-width:60ch}
+.views{display:flex;gap:4px;background:var(--wash);padding:4px;border-radius:999px;flex:none}
+.view-tab{border:0;background:transparent;padding:8px 16px;border-radius:999px;font-weight:700;font-size:15px;color:var(--ink-2);cursor:pointer}
+.view-tab:hover{color:var(--ink)}
+.view-tab[aria-current="page"]{background:var(--seg);color:var(--ink);box-shadow:0 1px 2px rgba(20,29,43,.14)}
+
+/* question panel */
+.question{margin-top:26px;background:var(--wash);border-radius:16px;padding:18px}
+.pickers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.picker{position:relative;min-width:0}
+.pk-label{display:block;font-size:14px;font-weight:700;color:var(--ink-2);margin:0 0 6px 2px}
+.pk-btn{display:flex;align-items:center;gap:10px;width:100%;min-height:64px;text-align:left;background:var(--panel);border:1px solid var(--rule);border-radius:12px;padding:9px 12px 9px 14px;cursor:pointer}
+.pk-btn:hover{border-color:var(--ink-3)}
+.pk-btn[aria-expanded="true"]{border-color:var(--act);box-shadow:0 0 0 3px var(--act-wash)}
+.pk-value{display:flex;flex-direction:column;min-width:0;flex:1}
+.pk-main{font-weight:700;font-size:17px;line-height:1.25;overflow-wrap:anywhere}
+.pk-sub{font-size:14px;line-height:1.35;color:var(--ink-3);overflow-wrap:anywhere}
+.pk-chev{width:18px;height:18px;flex:none;stroke:var(--ink-3);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.pk-pop{position:absolute;z-index:40;top:calc(100% + 6px);left:0;width:max(100%,400px);max-width:calc(100vw - 32px);background:var(--panel);border:1px solid var(--rule);border-radius:14px;box-shadow:var(--pop-shadow);padding:8px}
+.picker:last-child .pk-pop{left:auto;right:0}
+.pk-search{display:block;width:100%;height:44px;border:1px solid var(--rule);border-radius:10px;padding:0 12px;background:var(--paper);color:var(--ink);font:16px var(--text)}
+.pk-search:focus{outline:none;border-color:var(--act);box-shadow:0 0 0 3px var(--act-wash)}
+.pk-list{list-style:none;margin:6px 0 0;padding:0;max-height:min(52vh,360px);overflow-y:auto;overscroll-behavior:contain}
+.pk-group{padding:10px 10px 4px;font-size:13px;font-weight:700;color:var(--ink-3)}
+.pk-opt{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:8px 10px;border-radius:8px;cursor:pointer}
+.pk-opt.active{background:var(--act-wash)}
+.pk-opt[aria-selected="true"] .pk-opt-main{color:var(--act)}
+.pk-opt-main{font-weight:600;flex:1 1 0;min-width:0;overflow-wrap:break-word}
+.pk-opt-sub{font-size:13px;color:var(--ink-3);text-align:right;flex:0 0 auto;max-width:45%}
+.pk-empty{margin:12px 10px;color:var(--ink-3);font-size:14px}
+.pk-tools{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 14px;margin:9px 4px 3px;font-size:13.5px;color:var(--ink-2)}
+.pk-key{display:flex;flex-wrap:wrap;gap:4px 14px;margin:0}
+.pk-key span{display:inline-flex;align-items:center;gap:6px}
+.pk-only{display:inline-flex;align-items:center;gap:7px;cursor:pointer;font-weight:700}
+.pk-only input{width:16px;height:16px;margin:0;accent-color:var(--act)}
+.pk-opt-text{display:flex;flex-direction:column;min-width:0;flex:1 1 0}
+.pk-opt-meta{font-size:13px;color:var(--ink-3);overflow-wrap:break-word}
+.pk-st{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;font-size:13px;font-weight:700;white-space:nowrap}
+.pk-st .ic,.pk-key .ic{width:18px;height:18px}
+.pk-st .ic svg,.pk-key .ic svg{width:10px;height:10px;stroke-width:3.2}
+.st-ok{color:var(--good)}
+.st-no{color:var(--ink-3);font-weight:600}
+.pk-opt.no .pk-opt-main{color:var(--ink-2);font-weight:500}
+.filter-note{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-top:12px;padding:10px 14px;background:var(--panel);border-radius:10px;font-size:15px}
+.examples{margin-top:16px}
+.ex-label{display:block;font-size:14px;font-weight:700;color:var(--ink-2);margin:0 0 8px 2px}
+.ex-list{display:flex;flex-wrap:wrap;gap:8px}
+.ex-btn{border:1px solid var(--rule);background:var(--panel);border-radius:999px;padding:7px 14px;font-size:14.5px;font-weight:600;color:var(--ink);cursor:pointer;line-height:1.25;text-align:left}
+.ex-btn:hover{border-color:var(--act)}
+.ex-btn[aria-pressed="true"]{background:var(--act);border-color:var(--act);color:var(--panel)}
+
+/* answer */
+.answer{margin-top:38px}
+.asked{margin:0 0 14px;color:var(--ink-2);max-width:70ch}
+.asked b{color:var(--ink)}
+.badge{display:inline-flex;align-items:center;gap:8px;padding:6px 15px 6px 11px;border-radius:999px;font-size:15px;font-weight:700;line-height:1.3}
+.badge svg{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.headline{font-family:var(--display);font-weight:700;font-size:clamp(25px,3.3vw,34px);line-height:1.17;letter-spacing:-.012em;margin:12px 0 10px;max-width:25em;text-wrap:balance}
+.basis{margin:0;color:var(--ink-2);max-width:70ch}
+.basis p{margin:0 0 6px}
+.fig{margin:24px 0 0;background:var(--panel);border:1px solid var(--rule);border-radius:14px;padding:16px 16px 12px}
+.fig-title{font-weight:700;font-size:16.5px;margin:0 0 8px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px;color:var(--ink-2);margin:0 0 4px;padding:0;list-style:none}
+.legend li{display:flex;align-items:center;gap:7px}
+.sw{display:inline-block;flex:none;width:12px;height:12px;border-radius:50%}
+.sw-gene{background:var(--gene)}
+.sw-no{background:var(--nogene)}
+.sw-est{border:2px solid var(--ink-3)}
+.sw-med{width:3px;height:15px;border-radius:2px;background:var(--ink)}
+.sw-zone{width:16px;height:12px;border-radius:3px;background:var(--beyond);border:1px solid var(--rule)}
+.chart{position:relative}
+.chart svg{display:block;width:100%;height:auto;touch-action:pan-y}
+.fig-note{margin:8px 0 0;font-size:14.5px;color:var(--ink-3)}
+.t{font-family:var(--text);font-size:13px;fill:var(--ink-3)}
+.t-ink{fill:var(--ink)}
+.t-2{fill:var(--ink-2)}
+.t-b{font-weight:700}
+.t-l{font-size:14px}
+.grid{stroke:var(--grid);stroke-width:1}
+.axis{stroke:var(--rule);stroke-width:1}
+.zone{fill:var(--beyond)}
+.edge{stroke:var(--ink-3);stroke-width:1.25}
+.row-hl{fill:var(--wash);fill-opacity:.9}
+.nw{white-space:nowrap}
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.link{stroke:var(--rule);stroke-width:3;stroke-linecap:round}
+.dot{stroke:var(--panel);stroke-width:1.5}
+.dot-gene{fill:var(--gene)}
+.dot-no{fill:var(--nogene)}
+.dot.est{fill:var(--panel);stroke-width:1.8}
+.dot-gene.est{stroke:var(--gene)}
+.dot-no.est{stroke:var(--nogene)}
+.dot.hl{stroke:var(--ink);stroke-width:2.4}
+.med{stroke:var(--ink);stroke-width:3;stroke-linecap:round}
+.tip{position:absolute;z-index:20;pointer-events:none;background:var(--tip-bg);color:var(--tip-ink);font-size:13.5px;line-height:1.4;padding:8px 10px;border-radius:8px;transform:translate(-50%,calc(-100% - 12px));width:max-content;max-width:240px}
+
+/* checks */
+.block{margin-top:44px}
+.block h2{font-family:var(--display);font-weight:700;font-size:24px;line-height:1.2;letter-spacing:-.006em;margin:0 0 12px;text-wrap:balance}
+.block-sub{margin:0 0 4px;color:var(--ink-2);max-width:70ch}
+.checks{list-style:none;margin:0;padding:0}
+.check{display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px;padding:13px 0;border-top:1px solid var(--rule)}
+.check:last-child{border-bottom:1px solid var(--rule)}
+.ic{display:grid;place-items:center;flex:none;width:28px;height:28px;border-radius:50%}
+.ic svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.k-good{background:var(--good-wash);color:var(--good)}
+.k-warn{background:var(--warn-wash);color:var(--warn)}
+.k-stop{background:var(--stop-wash);color:var(--stop)}
+.k-no{background:var(--none-wash);color:var(--none)}
+.k-info{background:var(--act-wash);color:var(--act)}
+.check-t{font-weight:700;margin:2px 0 2px}
+.check-d{margin:0;color:var(--ink-2);max-width:68ch}
+.act-btn{margin-top:9px;border:1.5px solid var(--act);background:transparent;color:var(--act);border-radius:999px;padding:6px 15px;font-weight:700;font-size:14.5px;cursor:pointer}
+.act-btn:hover{background:var(--act-wash)}
+.caveat{margin:14px 0 0;color:var(--ink-3);font-size:15px;max-width:70ch}
+.toggle{margin-top:10px;border:0;background:none;color:var(--act);font-weight:700;cursor:pointer;padding:4px 0}
+
+/* rank page */
+.modes{display:inline-flex;flex-wrap:wrap;gap:4px;background:var(--panel);padding:4px;border-radius:999px;border:1px solid var(--rule);margin-bottom:16px}
+.mode-btn{border:0;background:transparent;padding:7px 15px;border-radius:999px;font-weight:700;font-size:14.5px;color:var(--ink-2);cursor:pointer}
+.mode-btn:hover{color:var(--ink)}
+.mode-btn[aria-checked="true"]{background:var(--act);color:var(--panel)}
+.pickers.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.rank-block{margin-top:34px}
+.rank-block h2{font-family:var(--display);font-weight:700;font-size:22px;line-height:1.25;margin:0 0 10px;text-wrap:balance}
+.rank{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
+.rank li{border-bottom:1px solid var(--rule)}
+.rank-row{display:grid;grid-template-columns:34px minmax(0,1.3fr) minmax(0,1fr) 136px;gap:6px 16px;align-items:center;width:100%;text-align:left;background:transparent;border:0;padding:12px 8px;cursor:pointer}
+.rank-row:hover{background:var(--act-wash)}
+.rank-n{font-weight:700;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.rank-name{display:flex;flex-direction:column;min-width:0}
+.rank-name b{font-size:16.5px;overflow-wrap:break-word}
+.rank-meta{font-size:13.5px;color:var(--ink-3)}
+.rank-fold{display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:15px;min-width:0}
+.rank-bar{display:block;height:8px;border-radius:4px;background:var(--grid)}
+.rank-bar i{display:block;height:8px;border-radius:4px;background:var(--gene)}
+.rank-tag{display:inline-flex;align-items:center;gap:6px;justify-self:end;padding:4px 11px 4px 7px;border-radius:999px;font-size:13.5px;font-weight:700;white-space:nowrap}
+.rank-tag svg{width:13px;height:13px;flex:none;fill:none;stroke:currentColor;stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round}
+.rank-empty{padding:14px 8px;color:var(--ink-3)}
+
+/* details */
+.more{margin-top:44px;border-top:1px solid var(--rule);padding-top:4px}
+.more>summary{cursor:pointer;font-weight:700;color:var(--act);padding:12px 0;list-style:none;display:flex;align-items:center;gap:10px}
+.more>summary::-webkit-details-marker{display:none}
+.more>summary::before{content:"";width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg);transition:transform .15s}
+.more[open]>summary::before{transform:rotate(45deg)}
+.more h3{font-size:17px;margin:22px 0 8px}
+.tbl{overflow-x:auto;border:1px solid var(--rule);border-radius:10px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--grid);vertical-align:top}
+th{font-weight:700;color:var(--ink-2)}
+tbody tr:last-child td{border-bottom:0}
+.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.copy-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-top:10px}
+.toast{font-size:14px;color:var(--good)}
+.btn{border:1.5px solid var(--act);background:transparent;color:var(--act);border-radius:999px;padding:6px 15px;font-weight:700;font-size:14.5px;cursor:pointer}
+.btn:hover{background:var(--act-wash)}
+.copy-box{width:100%;height:120px;margin-top:8px;font:13px/1.4 var(--text);background:var(--panel);color:var(--ink);border:1px solid var(--rule);border-radius:8px}
+
+/* how it works */
+.how{margin-top:10px}
+.how h2{font-family:var(--display);font-weight:700;font-size:27px;line-height:1.2;letter-spacing:-.008em;margin:40px 0 10px;text-wrap:balance}
+.how p,.how li{max-width:68ch}
+.steps{list-style:none;margin:16px 0 0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.step{background:var(--panel);border:1px solid var(--rule);border-radius:12px;padding:14px 14px 16px;min-width:0}
+.step-n{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--ink);color:var(--paper);font-weight:700;font-size:15px;margin-bottom:10px}
+.step h3{font-size:16px;line-height:1.3;margin:0 0 4px}
+.step p{margin:0;font-size:14.5px;color:var(--ink-2)}
+.read{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:10px}
+.read li{display:grid;grid-template-columns:22px minmax(0,1fr);gap:10px;align-items:start}
+.read .mark{display:grid;place-items:center;height:24px}
+.read .sw{width:13px;height:13px}
+.read .sw-med{width:3px;height:16px;border-radius:2px}
+.ka tbody tr{cursor:pointer}
+.ka tbody tr:hover td,.ka tbody tr:focus-within td{background:var(--act-wash)}
+.ka .why{display:block;font-size:13.5px;color:var(--ink-3);margin-top:2px}
+.yes{display:inline-flex;align-items:center;gap:6px;font-weight:700;color:var(--good)}
+.yes .ic{width:22px;height:22px}
+.yes .ic svg{width:12px;height:12px}
+.fine{color:var(--ink-3);font-size:14.5px}
+details.sub{margin-top:16px;border:1px solid var(--rule);border-radius:12px;background:var(--panel);padding:0 16px}
+details.sub>summary{cursor:pointer;font-weight:700;padding:13px 0}
+details.sub[open]>summary{border-bottom:1px solid var(--grid);margin-bottom:10px}
+details.sub ol,details.sub ul{padding-left:20px}
+details.sub li{margin-bottom:8px}
+.refs li{font-size:14.5px;overflow-wrap:anywhere}
+.foot{margin-top:60px;padding-top:16px;border-top:1px solid var(--rule);color:var(--ink-3);font-size:14.5px}
+.foot p{margin:4px 0;max-width:80ch}
+
+@media (max-width:760px){
+  .pickers,.pickers.two{grid-template-columns:minmax(0,1fr)}
+  .rank-row{grid-template-columns:30px minmax(0,1fr) auto}
+  .rank-fold{grid-column:2 / 4}
+  .pk-pop{width:100%}
+  .picker:last-child .pk-pop{left:0;right:auto}
+  .steps{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:460px){
+  .steps{grid-template-columns:minmax(0,1fr)}
+  .view-tab{padding:7px 12px;font-size:14px}
+  .hide-s{display:none}
+  .rank-row{grid-template-columns:28px minmax(0,1fr)}
+  .rank-fold,.rank-tag{grid-column:2}
+  .rank-tag{justify-self:start}
+  .question{padding:14px}
+  .fig{padding:14px 12px 10px}
+}
+@media (prefers-reduced-motion: reduce){
+  *{transition:none!important;scroll-behavior:auto!important}
+}
+</style>
+
+<div class="page">
+  <header class="top">
+    <div class="brand">
+      <h1>Does the Gene Decide the Drug?</h1>
+      <p class="lede">Pick a drug, a gene change and a cancer type. The tool checks real lab results from 984 cancer cell lines and tells you whether cells with that gene change respond differently.</p>
+    </div>
+    <nav class="views" aria-label="Pages">
+      <button type="button" class="view-tab" id="tab-ask" data-view="ask" aria-current="page">Ask<span class="hide-s"> a question</span></button>
+      <button type="button" class="view-tab" id="tab-rank" data-view="rank" aria-current="false">Rank drugs</button>
+      <button type="button" class="view-tab" id="tab-how" data-view="how" aria-current="false">How it works</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="view-ask" aria-label="Ask a question">
+      <form class="question" id="question" aria-label="Your question">
+        <div class="pickers">
+          <div class="picker" id="pk-drug">
+            <span class="pk-label" id="pk-drug-label">Drug</span>
+            <button type="button" class="pk-btn" id="pk-drug-btn" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="pk-drug-label pk-drug-btn">
+              <span class="pk-value"><span class="pk-main" id="pk-drug-main"></span><span class="pk-sub" id="pk-drug-sub"></span></span>
+              <svg class="pk-chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
+            </button>
+            <div class="pk-pop" id="pk-drug-pop" hidden>
+              <input type="text" class="pk-search" id="pk-drug-q" placeholder="Search by drug name or target" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="pk-drug-list" aria-autocomplete="list" aria-labelledby="pk-drug-label">
+              <ul class="pk-list" id="pk-drug-list" role="listbox" aria-labelledby="pk-drug-label"></ul>
+              <p class="pk-empty" id="pk-drug-empty" hidden>No drug matches. Try a shorter word or a target such as EGFR.</p>
+            </div>
+          </div>
+          <div class="picker" id="pk-gene">
+            <span class="pk-label" id="pk-gene-label">Gene change</span>
+            <button type="button" class="pk-btn" id="pk-gene-btn" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="pk-gene-label pk-gene-btn">
+              <span class="pk-value"><span class="pk-main" id="pk-gene-main"></span><span class="pk-sub" id="pk-gene-sub"></span></span>
+              <svg class="pk-chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
+            </button>
+            <div class="pk-pop" id="pk-gene-pop" hidden>
+              <input type="text" class="pk-search" id="pk-gene-q" placeholder="Search by gene, such as KRAS or HER2" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="pk-gene-list" aria-autocomplete="list" aria-labelledby="pk-gene-label">
+              <ul class="pk-list" id="pk-gene-list" role="listbox" aria-labelledby="pk-gene-label"></ul>
+              <p class="pk-empty" id="pk-gene-empty" hidden>No gene change matches. Try the gene name alone.</p>
+            </div>
+          </div>
+          <div class="picker" id="pk-type">
+            <span class="pk-label" id="pk-type-label">Cancer type</span>
+            <button type="button" class="pk-btn" id="pk-type-btn" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="pk-type-label pk-type-btn">
+              <span class="pk-value"><span class="pk-main" id="pk-type-main"></span><span class="pk-sub" id="pk-type-sub"></span></span>
+              <svg class="pk-chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
+            </button>
+            <div class="pk-pop" id="pk-type-pop" hidden>
+              <input type="text" class="pk-search" id="pk-type-q" placeholder="Search cancer types" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="pk-type-list" aria-autocomplete="list" aria-labelledby="pk-type-label">
+              <ul class="pk-list" id="pk-type-list" role="listbox" aria-labelledby="pk-type-label"></ul>
+              <p class="pk-empty" id="pk-type-empty" hidden>No cancer type matches.</p>
+            </div>
+          </div>
+        </div>
+        <div class="filter-note" id="filterNote" hidden></div>
+        <div class="examples">
+          <span class="ex-label" id="exLabel">Or try an example</span>
+          <div class="ex-list" id="examples" role="group" aria-labelledby="exLabel"></div>
+        </div>
+      </form>
+
+      <section class="answer" id="answer" aria-label="The answer">
+        <p class="asked" id="asked"></p>
+        <div id="verdict" aria-live="polite">
+          <span class="badge" id="badge"></span>
+          <p class="headline" id="headline"></p>
+          <div class="basis" id="basis"></div>
+        </div>
+        <figure class="fig" id="doseFig">
+          <p class="fig-title" id="doseTitle"></p>
+          <ul class="legend" id="doseLegend"></ul>
+          <div class="chart" id="doseBox"><svg id="dose" role="img" aria-labelledby="doseTitle"></svg><div class="tip" id="doseTip" hidden></div></div>
+          <p class="fig-note" id="doseNote"></p>
+        </figure>
+      </section>
+
+      <section class="block" id="checksBlock" aria-labelledby="checksTitle">
+        <h2 id="checksTitle">How sure can we be?</h2>
+        <ul class="checks" id="checks"></ul>
+        <p class="caveat">These are cancer cells grown in a dish. Treat the answer as a lead to test in the lab, not a prediction for patients.</p>
+      </section>
+
+      <section class="block" id="typesBlock" aria-labelledby="typesTitle">
+        <h2 id="typesTitle">Does it hold in other cancer types?</h2>
+        <p class="block-sub" id="typesSub"></p>
+        <figure class="fig" id="typesFig">
+          <ul class="legend" id="typesLegend"></ul>
+          <div class="chart" id="typesBox"><svg id="types" role="img" aria-labelledby="typesTitle"></svg><div class="tip" id="typesTip" hidden></div></div>
+          <button type="button" class="toggle" id="typesToggle" hidden></button>
+        </figure>
+      </section>
+
+      <details class="more" id="more">
+        <summary>More detail: the numbers and every cell line</summary>
+        <div id="moreBody">
+          <h3>The numbers</h3>
+          <div class="tbl"><table id="numTable"></table></div>
+          <h3>By cancer type</h3>
+          <div class="tbl"><table id="typeTable"></table></div>
+          <h3 id="lineTitle">Every cell line</h3>
+          <div class="tbl"><table id="lineTable"></table></div>
+          <div class="copy-row"><button type="button" class="btn" id="copyLines">Copy this table</button><span class="toast" id="copyToast" hidden></span></div>
+        </div>
+      </details>
+    </section>
+
+    <section id="view-rank" aria-label="Rank drugs" hidden>
+      <form class="question" id="rankForm" aria-label="What to rank">
+        <div class="modes" role="radiogroup" aria-label="What to rank">
+          <button type="button" class="mode-btn" id="rk-mode-drugs" role="radio" aria-checked="true">Rank drugs for one gene change</button>
+          <button type="button" class="mode-btn" id="rk-mode-genes" role="radio" aria-checked="false">Rank gene changes for one drug</button>
+        </div>
+        <div class="pickers two">
+          <div class="picker" id="pk-rkgene">
+            <span class="pk-label" id="pk-rkgene-label">Gene change</span>
+            <button type="button" class="pk-btn" id="pk-rkgene-btn" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="pk-rkgene-label pk-rkgene-btn">
+              <span class="pk-value"><span class="pk-main" id="pk-rkgene-main"></span><span class="pk-sub" id="pk-rkgene-sub"></span></span>
+              <svg class="pk-chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
+            </button>
+            <div class="pk-pop" id="pk-rkgene-pop" hidden>
+              <input type="text" class="pk-search" id="pk-rkgene-q" placeholder="Search by gene, such as KRAS or HER2" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="pk-rkgene-list" aria-autocomplete="list" aria-labelledby="pk-rkgene-label">
+              <ul class="pk-list" id="pk-rkgene-list" role="listbox" aria-labelledby="pk-rkgene-label"></ul>
+              <p class="pk-empty" id="pk-rkgene-empty" hidden>No gene change matches. Try the gene name alone.</p>
+            </div>
+          </div>
+          <div class="picker" id="pk-rkdrug" hidden>
+            <span class="pk-label" id="pk-rkdrug-label">Drug</span>
+            <button type="button" class="pk-btn" id="pk-rkdrug-btn" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="pk-rkdrug-label pk-rkdrug-btn">
+              <span class="pk-value"><span class="pk-main" id="pk-rkdrug-main"></span><span class="pk-sub" id="pk-rkdrug-sub"></span></span>
+              <svg class="pk-chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
+            </button>
+            <div class="pk-pop" id="pk-rkdrug-pop" hidden>
+              <input type="text" class="pk-search" id="pk-rkdrug-q" placeholder="Search by drug name or target" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="pk-rkdrug-list" aria-autocomplete="list" aria-labelledby="pk-rkdrug-label">
+              <ul class="pk-list" id="pk-rkdrug-list" role="listbox" aria-labelledby="pk-rkdrug-label"></ul>
+              <p class="pk-empty" id="pk-rkdrug-empty" hidden>No drug matches. Try a shorter word or a target such as EGFR.</p>
+            </div>
+          </div>
+          <div class="picker" id="pk-rktype">
+            <span class="pk-label" id="pk-rktype-label">Cancer type</span>
+            <button type="button" class="pk-btn" id="pk-rktype-btn" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="pk-rktype-label pk-rktype-btn">
+              <span class="pk-value"><span class="pk-main" id="pk-rktype-main"></span><span class="pk-sub" id="pk-rktype-sub"></span></span>
+              <svg class="pk-chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
+            </button>
+            <div class="pk-pop" id="pk-rktype-pop" hidden>
+              <input type="text" class="pk-search" id="pk-rktype-q" placeholder="Search cancer types" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="pk-rktype-list" aria-autocomplete="list" aria-labelledby="pk-rktype-label">
+              <ul class="pk-list" id="pk-rktype-list" role="listbox" aria-labelledby="pk-rktype-label"></ul>
+              <p class="pk-empty" id="pk-rktype-empty" hidden>No cancer type matches.</p>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <section class="answer" id="rankResult" aria-label="The ranking">
+        <p class="asked" id="rkAsked"></p>
+        <div aria-live="polite">
+          <p class="headline" id="rkHead"></p>
+          <div class="basis" id="rkBasis"></div>
+        </div>
+        <div class="rank-block">
+          <h2 id="rkBetterTitle"></h2>
+          <ol class="rank" id="rkBetter"></ol>
+          <button type="button" class="toggle" id="rkBetterMore" hidden></button>
+        </div>
+        <div class="rank-block">
+          <h2 id="rkWorseTitle"></h2>
+          <ol class="rank" id="rkWorse"></ol>
+          <button type="button" class="toggle" id="rkWorseMore" hidden></button>
+        </div>
+        <p class="caveat">Select any row to open it on the Ask page, with the chart and the full set of checks. These are cancer cells grown in a dish, so a ranking points to drugs worth testing, not treatments.</p>
+      </section>
+    </section>
+
+    <section id="view-how" class="how" aria-label="How it works" hidden>
+      <h2>From a dish of cells to an answer</h2>
+      <p>The data come from a large lab screen that grew cancer cells, dosed them with drugs and measured how much each dose slowed their growth.</p>
+      <ol class="steps">
+        <li class="step"><span class="step-n">1</span><h3>Grow the cells</h3><p>984 cancer cell lines from 41 cancer types, each kept alive in the lab.</p></li>
+        <li class="step"><span class="step-n">2</span><h3>Add the drug</h3><p>Each line gets the drug at 5 or 9 doses for 72 hours.</p></li>
+        <li class="step"><span class="step-n">3</span><h3>Find the dose that halves growth</h3><p>That dose is the IC50. A lower IC50 means the drug works at a smaller dose.</p></li>
+        <li class="step"><span class="step-n">4</span><h3>Compare two groups</h3><p>Lines with the gene change against lines without it, inside the cancer type you picked.</p></li>
+      </ol>
+
+      <h2>How to read the answer</h2>
+      <ul class="read">
+        <li><span class="mark"><span class="sw sw-gene"></span></span><span>Each dot is one cell line. Orange dots have the gene change.</span></li>
+        <li><span class="mark"><span class="sw sw-no"></span></span><span>Grey-blue dots do not have it.</span></li>
+        <li><span class="mark"><span class="sw sw-est"></span></span><span>Hollow dots never dropped to half their growth, even at the highest dose tested, so their IC50 is an estimate.</span></li>
+        <li><span class="mark"><span class="sw sw-med"></span></span><span>The dark line in each row marks the median, the middle cell line of that group.</span></li>
+      </ul>
+      <p>Further left on the chart means less drug was needed, so the drug worked better on those cells.</p>
+
+      <h2>When the tool says yes</h2>
+      <p>Every answer follows the same rule. The p-value is the chance of seeing a gap this big if the gene change made no difference.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Answer</th><th>What it takes</th></tr></thead>
+        <tbody>
+          <tr><td>Gene change predicts sensitivity</td><td>Lines with the gene change need at least 2 times less drug, and p is below 0.05</td></tr>
+          <tr><td>Gene change predicts resistance</td><td>Lines with the gene change need at least 2 times more drug, and p is below 0.05</td></tr>
+          <tr><td>Small difference</td><td>p is below 0.05, but the gap is smaller than 2 times</td></tr>
+          <tr><td>No clear link</td><td>p is 0.05 or higher</td></tr>
+          <tr><td>Not enough cell lines</td><td>Either group has fewer than 3 lines, so the tool gives no answer</td></tr>
+        </tbody>
+      </table></div>
+      <p>The menus on the Ask page warn you ahead of time. A green check means the choice leaves at least 3 lines on each side, given your other two picks. A red cross means the tool would give no answer.</p>
+
+      <h2>Ranking many drugs at once</h2>
+      <p>The Rank drugs page runs the same comparison for every drug, or for every gene change, in one go. Testing hundreds of pairs means some will pass p below 0.05 by luck, so the ranking uses a stricter cutoff, a false discovery rate below 5% (Benjamini and Hochberg 1995).</p>
+      <ul>
+        <li><b>Clear link.</b> Passes the stricter cutoff and shows a gap of at least 2 times.</li>
+        <li><b>Possible link.</b> Shows a gap of at least 2 times with p below 0.05, but does not pass the stricter cutoff, so it could be luck.</li>
+      </ul>
+      <p>The menus on this page mark each choice too. A green check shows how many drugs or gene changes that choice leaves to rank. A red cross means none of them has at least 3 lines on each side, so the list would come back empty.</p>
+
+      <h2>How we know it works</h2>
+      <p id="kaSummary"></p>
+      <div class="tbl"><table class="ka" id="kaTable"></table></div>
+      <p class="fine">Select a row to open that question on the Ask page.</p>
+
+      <h2>Where the data come from</h2>
+      <p>Every number comes from GDSC1000 release v17, a public dataset from the Genomics of Drug Sensitivity in Cancer project at the Wellcome Sanger Institute and Massachusetts General Hospital (Iorio et al. 2016). The tool uses 210,186 results: 250 drugs tested on 984 cancer cell lines, with 397 gene changes recorded for each line.</p>
+      <p>The files come straight from the GDSC team. Drug responses come from <a href="https://github.com/CancerRxGene/gdscdata" target="_blank" rel="noopener">gdscdata</a>, gene changes and cell line names from <a href="https://github.com/CancerRxGene/gdsctools" target="_blank" rel="noopener">gdsctools</a>, and drug names and targets from <a href="https://www.cancerrxgene.org" target="_blank" rel="noopener">cancerrxgene.org</a>. GDSC makes these data free for academic use.</p>
+
+      <h2>Limits</h2>
+      <ul>
+        <li>Cell lines are not patients. They grow on plastic without blood vessels, immune cells or neighboring tissue, and many have changed over years in culture.</li>
+        <li>A gene is recorded only as changed or not. The data do not say which exact mutation a line carries, so BRAF V600E is counted together with other cancer-linked BRAF mutations.</li>
+        <li>Not every drug was tested on every cell line, so some groups are small or empty.</li>
+        <li>About two thirds of IC50 values lie past the highest dose tested, so they are estimates. The test uses only the order of the values, which keeps those estimates from driving the result.</li>
+        <li>Try enough combinations and some will pass the 0.05 cutoff by luck. The Rank drugs page corrects for this, but single questions on the Ask page do not, so treat a surprising result as a lead to confirm.</li>
+      </ul>
+
+      <details class="sub">
+        <summary>The statistics, for the curious</summary>
+        <ol>
+          <li><b>Test.</b> A two-sided Mann-Whitney U test on log IC50 (Mann and Whitney 1947). It is exact for small groups and uses the normal approximation with tie and continuity corrections for large ones.</li>
+          <li><b>Typical fold difference.</b> The median IC50 ratio over every pair made of one line with the gene change and one line without it, the Hodges-Lehmann estimate (Hodges and Lehmann 1963). Its 95% range comes from inverting the same test (Bauer 1972), so the range and the p-value tell the same story.</li>
+          <li><b>Pooled cancer types.</b> A model with a separate average for each cancer type plus one gene-change effect, tested with a t-test. This is the same idea as the analysis in Iorio et al. (2016).</li>
+          <li><b>Other gene changes.</b> For a single cancer type, the tool checks every other gene change for an uneven split between the two groups (Fisher exact test) and flags the strongest one when p is below 0.001.</li>
+          <li><b>Repeat screens.</b> Fifteen drugs were screened twice under different IDs. The tool runs the same comparison on the second screen and says whether the two agree.</li>
+          <li><b>Data cleaning.</b> Of 222,339 fitted curves, 807 with a poor fit (RMSE above 0.3) were removed, the same rule GDSC uses for its releases. For 24 drugs screened at two dose ranges, the tool kept the range used on most lines, which removed 571 curves. Lines without genetic data were removed, which leaves 210,186 results on 984 cell lines.</li>
+          <li><b>Cancer types.</b> Each line takes the TCGA cancer type that GDSC assigns. The 180 lines without one are grouped by their GDSC tissue label, for example Ewing sarcoma.</li>
+          <li><b>Ranking.</b> Each drug (or gene change) with at least 3 lines on each side is tested as above. The p-values are then adjusted with the Benjamini-Hochberg false discovery rate. Pooled cancer types use the within-type model.</li>
+          <li><b>Code checks.</b> The statistics match SciPy and an exact calculation of the Mann-Whitney distribution to at least 6 significant digits.</li>
+        </ol>
+      </details>
+      <details class="sub">
+        <summary>References</summary>
+        <ol class="refs" id="refs"></ol>
+      </details>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p>A teaching tool for BIOL 831, Cell and Molecular Biology of Disease. Not for clinical use.</p>
+    <p>Data from GDSC1000 release v17, Wellcome Sanger Institute and Massachusetts General Hospital. Please cite Yang et al. (2013) and Iorio et al. (2016) when you use these results.</p>
+  </footer>
+</div>
+<script type="application/json" id="gdsc-data">/*DATA*/</script>
+<script>/*STATS*/</script>
+<script>/*APP*/</script>
