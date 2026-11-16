@@ -58,6 +58,30 @@ button{font:inherit;color:inherit}
 .view-tab:hover{color:var(--ink)}
 .view-tab[aria-current="page"]{background:var(--seg);color:var(--ink);box-shadow:0 1px 2px rgba(20,29,43,.14)}
 
+/* video guide */
+.guide{display:flex;flex-direction:column;gap:8px;width:250px;flex:none;border:0;padding:0;background:transparent;text-align:left;cursor:pointer;color:var(--ink)}
+.guide-thumb{position:relative;display:block;border-radius:12px;overflow:hidden;background:#fff;border:1px solid var(--rule);aspect-ratio:16/9}
+.guide-thumb img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .25s ease}
+.guide:hover .guide-thumb img{transform:scale(1.04)}
+.guide-play{position:absolute;inset:0;display:grid;place-items:center}
+.guide-play span{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:rgba(20,29,43,.84);box-shadow:0 4px 14px rgba(0,0,0,.28)}
+.guide-play svg{width:20px;height:20px;margin-left:3px;fill:#fff}
+.guide-txt{font-size:14.5px;line-height:1.35;color:var(--ink-2)}
+.guide-txt b{display:block;color:var(--ink);font-size:15px}
+.guide:hover .guide-txt b{color:var(--act)}
+.guide-dlg{width:min(960px,calc(100vw - 32px));max-width:none;padding:0;border:0;border-radius:16px;background:var(--panel);color:var(--ink);box-shadow:0 24px 60px rgba(0,0,0,.45)}
+.guide-dlg::backdrop{background:rgba(10,14,20,.74)}
+.dlg-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px 10px 20px}
+.dlg-head h2{margin:0;font-family:var(--display);font-size:20px;font-weight:700}
+.dlg-x{border:0;background:var(--wash);color:var(--ink);width:38px;height:38px;border-radius:50%;cursor:pointer;display:grid;place-items:center;flex:none}
+.dlg-x svg{width:16px;height:16px;stroke:currentColor;stroke-width:2.2;fill:none}
+.guide-dlg video,.how-video video{display:block;width:100%;height:auto;aspect-ratio:16/9;background:#000}
+.how-video{margin:14px 0 0;border-radius:14px;overflow:hidden;border:1px solid var(--rule);background:#000}
+
+/* pictures */
+.pic{margin:18px 0 8px;border-radius:14px;overflow:hidden;background:#fff;border:1px solid var(--rule)}
+.pic img{display:block;width:100%;height:auto}
+
 /* question panel */
 .question{margin-top:26px;background:var(--wash);border-radius:16px;padding:18px}
 .pickers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
@@ -248,6 +272,10 @@ details.sub li{margin-bottom:8px}
   .pk-pop{width:100%}
   .picker:last-child .pk-pop{left:0;right:auto}
   .steps{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .guide{width:100%;flex-direction:row;align-items:center;gap:14px}
+  .guide-thumb{width:132px;flex:none}
+  .guide-play span{width:40px;height:40px}
+  .guide-play svg{width:16px;height:16px}
 }
 @media (max-width:460px){
   .steps{grid-template-columns:minmax(0,1fr)}
@@ -270,6 +298,10 @@ details.sub li{margin-bottom:8px}
       <h1>Does the Gene Decide the Drug?</h1>
       <p class="lede">Pick a drug, a gene change and a cancer type. The tool checks real lab results from 984 cancer cell lines and tells you whether cells with that gene change respond differently.</p>
     </div>
+    <button type="button" class="guide" id="guideBtn" aria-haspopup="dialog">
+      <span class="guide-thumb"><img src="media/hero-cell.webp" width="1200" height="675" alt="" decoding="async"><span class="guide-play" aria-hidden="true"><span><svg viewBox="0 0 24 24"><path d="M7 4.5v15l12.5-7.5z"/></svg></span></span></span>
+      <span class="guide-txt"><b>New here? Watch the guide</b>A 5-minute video on how to use the tool</span>
+    </button>
     <nav class="views" aria-label="Pages">
       <button type="button" class="view-tab" id="tab-ask" data-view="ask" aria-current="page">Ask<span class="hide-s"> a question</span></button>
       <button type="button" class="view-tab" id="tab-rank" data-view="rank" aria-current="false">Rank drugs</button>
@@ -437,8 +469,19 @@ details.sub li{margin-bottom:8px}
     </section>
 
     <section id="view-how" class="how" aria-label="How it works" hidden>
+      <h2 id="videoGuide">Watch the video guide</h2>
+      <p>A 5-minute walkthrough of asking a question, reading the answer and ranking drugs. Press CC in the player for captions.</p>
+      <div class="how-video">
+        <video id="howVideo" controls preload="none" playsinline poster="media/guide-poster.jpg">
+          <source src="media/guide.mp4" type="video/mp4">
+          <track kind="captions" src="media/guide.vtt" srclang="en" label="English">
+          Your browser cannot play this video. <a href="media/guide.mp4">Download the video guide</a>.
+        </video>
+      </div>
+
       <h2>From a dish of cells to an answer</h2>
       <p>The data come from a large lab screen that grew cancer cells, dosed them with drugs and measured how much each dose slowed their growth.</p>
+      <figure class="pic"><img src="media/dish-to-answer.webp" width="1672" height="941" loading="lazy" decoding="async" alt="Four steps. Grow cancer cells in dishes, add the drug at several doses, find the IC50 where growth drops to half, then compare the IC50 of lines with and without the gene change."></figure>
       <ol class="steps">
         <li class="step"><span class="step-n">1</span><h3>Grow the cells</h3><p>984 cancer cell lines from 41 cancer types, each kept alive in the lab.</p></li>
         <li class="step"><span class="step-n">2</span><h3>Add the drug</h3><p>Each line gets the drug at 5 or 9 doses for 72 hours.</p></li>
@@ -447,6 +490,7 @@ details.sub li{margin-bottom:8px}
       </ol>
 
       <h2>How to read the answer</h2>
+      <figure class="pic"><img src="media/read-the-answer.webp" width="1672" height="941" loading="lazy" decoding="async" alt="A dot chart with one row of orange dots for lines with the gene change and one row of blue-grey dots for lines without it. Each dot is one cell line, a hollow dot is an estimated IC50, a dark line marks each group's median, and further left means less drug was needed."></figure>
       <ul class="read">
         <li><span class="mark"><span class="sw sw-gene"></span></span><span>Each dot is one cell line. Orange dots have the gene change.</span></li>
         <li><span class="mark"><span class="sw sw-no"></span></span><span>Grey-blue dots do not have it.</span></li>
@@ -471,6 +515,7 @@ details.sub li{margin-bottom:8px}
 
       <h2>Ranking many drugs at once</h2>
       <p>The Rank drugs page runs the same comparison for every drug, or for every gene change, in one go. Testing hundreds of pairs means some will pass p below 0.05 by luck, so the ranking uses a stricter cutoff, a false discovery rate below 5% (Benjamini and Hochberg 1995).</p>
+      <figure class="pic"><img src="media/rank-funnel.webp" width="1672" height="941" loading="lazy" decoding="async" alt="A cancer cell with a gene change is tested against many drugs. The results pass through a filter, and only the drugs with the strongest links come out the other side."></figure>
       <ul>
         <li><b>Clear link.</b> Passes the stricter cutoff and shows a gap of at least 2 times.</li>
         <li><b>Possible link.</b> Shows a gap of at least 2 times with p below 0.05, but does not pass the stricter cutoff, so it could be luck.</li>
@@ -487,6 +532,7 @@ details.sub li{margin-bottom:8px}
       <p>The files come straight from the GDSC team. Drug responses come from <a href="https://github.com/CancerRxGene/gdscdata" target="_blank" rel="noopener">gdscdata</a>, gene changes and cell line names from <a href="https://github.com/CancerRxGene/gdsctools" target="_blank" rel="noopener">gdsctools</a>, and drug names and targets from <a href="https://www.cancerrxgene.org" target="_blank" rel="noopener">cancerrxgene.org</a>. GDSC makes these data free for academic use.</p>
 
       <h2>Limits</h2>
+      <figure class="pic"><img src="media/not-patients.webp" width="1672" height="941" loading="lazy" decoding="async" alt="Cell lines are not patients. A dish of cancer cells lacks the immune cells, blood vessels and neighbouring tissue of a real body, so results are lab leads, not clinical predictions."></figure>
       <ul>
         <li>Cell lines are not patients. They grow on plastic without blood vessels, immune cells or neighboring tissue, and many have changed over years in culture.</li>
         <li>A gene is recorded only as changed or not. The data do not say which exact mutation a line carries, so BRAF V600E is counted together with other cancer-linked BRAF mutations.</li>
@@ -520,6 +566,18 @@ details.sub li{margin-bottom:8px}
     <p>A teaching tool for BIOL 831, Cell and Molecular Biology of Disease. Not for clinical use.</p>
     <p>Data from GDSC1000 release v17, Wellcome Sanger Institute and Massachusetts General Hospital. Please cite Yang et al. (2013) and Iorio et al. (2016) when you use these results.</p>
   </footer>
+
+  <dialog class="guide-dlg" id="guideDlg" aria-labelledby="guideDlgTitle">
+    <div class="dlg-head">
+      <h2 id="guideDlgTitle">How to use the tool</h2>
+      <button type="button" class="dlg-x" id="guideClose" aria-label="Close the video"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13"/></svg></button>
+    </div>
+    <video id="guideVideo" controls preload="none" playsinline poster="media/guide-poster.jpg">
+      <source src="media/guide.mp4" type="video/mp4">
+      <track kind="captions" src="media/guide.vtt" srclang="en" label="English">
+      Your browser cannot play this video. <a href="media/guide.mp4">Download the video guide</a>.
+    </video>
+  </dialog>
 </div>
 <script type="application/json" id="gdsc-data">/*DATA*/</script>
 <script>/*STATS*/</script>

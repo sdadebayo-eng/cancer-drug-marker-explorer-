@@ -1202,13 +1202,37 @@
       $('tab-' + v).setAttribute('aria-current', v === name ? 'page' : 'false');
     });
     closeAll(null);
+    var hv = $('howVideo');
+    if (hv && name !== 'how' && !hv.paused) hv.pause();
     if (name === 'ask' && ST.last) { renderDose(); renderTypes(); }
     if (name === 'rank' && !RK.res) runRank();
     try { history.replaceState(null, '', '#' + name); } catch (e) { /* some viewers block this */ }
   }
 
   // ------------------------------------------------------------------ init
+  // the video guide opens in a pop-up player, or on the How it works page where pop-ups are not supported
+  function initGuide() {
+    var btn = $('guideBtn'), dlg = $('guideDlg'), vid = $('guideVideo');
+    if (!btn) return;
+    function play(v) { try { var pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); } catch (e) { /* playback refused */ } }
+    if (dlg && typeof dlg.showModal === 'function') {
+      btn.addEventListener('click', function () {
+        var hv = $('howVideo'); if (hv && !hv.paused) hv.pause();
+        dlg.showModal(); play(vid);
+      });
+      dlg.addEventListener('close', function () { vid.pause(); btn.focus(); });
+      $('guideClose').addEventListener('click', function () { dlg.close(); });
+      dlg.addEventListener('click', function (e) { if (e.target === dlg) dlg.close(); });
+    } else {
+      btn.addEventListener('click', function () {
+        showView('how');
+        var t = $('videoGuide'); if (t) t.scrollIntoView();
+      });
+    }
+  }
+
   function init() {
+    initGuide();
     Picker('drug', DRUG_ITEMS, function (v) { ST.drug = v; ST.filter = null; ST.typesAll = false; run(); }, drugStatuses);
     Picker('gene', GENE_ITEMS, function (v) { ST.gene = v; ST.filter = null; ST.typesAll = false; run(); }, geneStatuses);
     Picker('type', TYPE_ITEMS, function (v) { ST.set = v; ST.filter = null; ST.typesAll = false; run(); }, typeStatuses);
