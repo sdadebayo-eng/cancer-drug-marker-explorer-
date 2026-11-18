@@ -1,0 +1,122 @@
+WEBVTT
+
+1
+00:00:00.500 --> 00:00:04.279
+Hello, and welcome to Does the Gene Decide the Drug.
+
+2
+00:00:04.767 --> 00:00:08.348
+Let me show you how it works. It only takes a few minutes.
+
+3
+00:00:09.767 --> 00:00:19.920
+So, here's the idea. A big lab project called GDSC grew nearly a thousand different cancer cell lines, and tested hundreds of drugs on them.
+
+4
+00:00:20.300 --> 00:00:30.083
+A cell line is simply cancer cells taken from a patient's tumour and kept growing in the lab. And each one carries its own set of gene changes.
+
+5
+00:00:30.467 --> 00:00:39.358
+That lets us ask a really useful question. If cancer cells have a particular gene change, does a drug work better on them, or worse?
+
+6
+00:00:40.567 --> 00:00:46.500
+Everything starts with these three boxes. A drug, a gene change, and a cancer type.
+
+7
+00:00:46.867 --> 00:00:54.873
+Let's try a fresh question. I'll click the drug box, start typing, and pick lapatinib, which is used for breast cancer.
+
+8
+00:00:55.267 --> 00:01:05.712
+Now the cancer type. You'll notice every option has a green tick or a red cross. Green means there's enough data to give you an answer. Red means there isn't.
+
+9
+00:01:06.100 --> 00:01:17.422
+Breast cancer has a red cross at the moment. That's because the gene box still says BRAF, and only one breast cancer line with that mutation was tested with this drug.
+
+10
+00:01:17.800 --> 00:01:23.575
+If I pick it anyway, the tool simply tells me there aren't enough cell lines. It won't guess.
+
+11
+00:01:23.967 --> 00:01:36.057
+So let's fix the gene. Lapatinib targets a protein called HER2, so I'll search for that, and choose the amplification, which just means the cells carry extra copies of the gene.
+
+12
+00:01:37.267 --> 00:01:44.568
+And there's the answer, straight away. The badge gives you the verdict. Here, the gene change predicts sensitivity.
+
+13
+00:01:44.967 --> 00:01:54.846
+In plain English, breast cancer lines with extra HER2 copies needed ninety-two times less lapatinib than the others. That's a big difference.
+
+14
+00:01:55.233 --> 00:02:05.722
+Scroll down a little, though. Under How sure can we be, the tool points out that one group has only four cell lines. So it's promising, but treat it with a bit of caution.
+
+15
+00:02:06.933 --> 00:02:16.055
+For a richer example, let's head back up and click one of the ready-made questions. I'll pick BRAF in melanoma, where we already know the answer.
+
+16
+00:02:17.267 --> 00:02:28.013
+This dot chart is the heart of the tool. Every dot is one cell line, placed by how much drug it took to halve its growth. The further left, the less drug it needed.
+
+17
+00:02:28.400 --> 00:02:37.485
+Orange dots carry the gene change, and grey ones don't. The hollow dots never got down to half growth at all, so their values are estimates.
+
+18
+00:02:37.867 --> 00:02:42.543
+Hover over any dot, and it tells you exactly which cell line you're looking at.
+
+19
+00:02:43.767 --> 00:02:55.011
+Below the chart, How sure can we be runs a few quick checks. The gap is big enough to matter, it's very unlikely to be chance, and a second test of the same drug agrees.
+
+20
+00:02:55.400 --> 00:03:05.360
+It's also honest about a catch. Another gene, NRAS, is mutated in most of the comparison lines, so that could explain some of the difference.
+
+21
+00:03:06.567 --> 00:03:19.946
+Does it hold in other cancer types puts the same question side by side for each tissue. Here, BRAF-mutant melanoma needed less of this drug than BRAF-mutant lines from any other cancer.
+
+22
+00:03:20.333 --> 00:03:28.316
+And if you want the raw numbers, More detail has everything, including every single cell line, ready to copy into a spreadsheet.
+
+23
+00:03:29.533 --> 00:03:34.547
+Right, now the second tab, Rank drugs. This one tests every drug at once.
+
+24
+00:03:34.933 --> 00:03:45.167
+You pick a gene change and a cancer type, and it runs the same comparison across all two hundred and sixty-five drug screens, then sorts them for you.
+
+25
+00:03:45.567 --> 00:03:59.620
+The drugs that work best on cells with the gene change come out on top. With so many tests, a few will look good just by luck, so a clear link has to pass a tougher test. A possible link might just be chance.
+
+26
+00:04:00.000 --> 00:04:05.336
+You can also flip it round, and rank gene changes for a single drug instead.
+
+27
+00:04:05.733 --> 00:04:10.365
+And clicking any row opens it up as a full question, chart and all.
+
+28
+00:04:11.567 --> 00:04:22.006
+Finally, How it works has a copy of this video, explains the method in plain language, and shows the tool getting all eight well-known drug and gene pairs right.
+
+29
+00:04:23.233 --> 00:04:34.291
+One last thing to keep in mind. These are cancer cells grown in a dish, not patients, so think of any result as a lead to test in the lab, not as medical advice.
+
+30
+00:04:34.767 --> 00:04:39.075
+Have a go yourself, using the link on screen. Thanks for watching.
+
