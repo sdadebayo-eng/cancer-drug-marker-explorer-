@@ -1,4 +1,6 @@
-# Does the Gene Decide the Drug?
+# MarkerWise
+
+**Does the gene decide the drug?**
 
 A teaching tool for BIOL 831. It tests whether a gene change in cancer cell lines predicts how well a drug works, using the public GDSC1000 dataset (release v17) from the Wellcome Sanger Institute.
 
